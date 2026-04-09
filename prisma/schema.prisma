@@ -492,24 +492,24 @@ model Encounter {
 // ─── DIAGNOSIS ───────────────────────────────────────────────
 
 model Diagnosis {
-  diagnosisId              String    @id @default(cuid()) @map("diagnosis_id")
-  encounterId              String    @map("encounter_id")
+  diagnosisId              String    @id @default(cuid()) @map("diagnosisid")
+  diagnosisCode            String    @unique @map("diagnosiscode") // ← TAMBAH
+  encounterId              String    @map("encounterid")
   encounter                Encounter @relation(fields: [encounterId], references: [encounterId])
-  doktorPemeriksa          String    @map("doktor_pemeriksa")   // userId dokter
+  doktorPemeriksa          String    @map("doktorpemeriksa")
   diagnosa                 String
-  kategoriDiagnosa         String?   @map("kategori_diagnosa")  // e.g. "Diabetes", "Hipertensi"
-  icdPrimer                String?   @map("icd_primer")
-  icdSekunder              String?   @map("icd_sekunder")
-  icdTersier               String?   @map("icd_tersier")
-  keluhanRiwayatSekarang   String?   @map("keluhan_riwayat_sekarang")
-  riwayatPenyakitTerdahulu String?   @map("riwayat_penyakit_terdahulu")
-  riwayatSosialKebiasaan   String?   @map("riwayat_sosial_kebiasaan")
-  riwayatPengobatan        String?   @map("riwayat_pengobatan")
-  pemeriksaanFisik         String?   @map("pemeriksaan_fisik")
-  // Pemeriksaan neurologis dan tambahan lainnya disimpan di sini sebagai JSON
-  pemeriksaanTambahan      Json?     @map("pemeriksaan_tambahan")
-  createdAt                DateTime  @default(now()) @map("created_at")
-  updatedAt                DateTime  @updatedAt @map("updated_at")
+  kategoriDiagnosa         String?   @map("kategoridiagnosa")
+  icdPrimer                String?   @map("icdprimer")
+  icdSekunder              String?   @map("icdsekunder")
+  icdTersier               String?   @map("icdtersier")
+  keluhanRiwayatSekarang   String?   @map("keluhanriwayatsekarang")
+  riwayatPenyakitTerdahulu String?   @map("riwayatpenyakitterdahulu")
+  riwayatSosialKebiasaan   String?   @map("riwayatsosialkebiasaan")
+  riwayatPengobatan        String?   @map("riwayatpengobatan")
+  pemeriksaanFisik         String?   @map("pemeriksaanfisik")
+  pemeriksaanTambahan      Json?     @map("pemeriksaantambahan")
+  createdAt                DateTime  @default(now()) @map("createdat")
+  updatedAt                DateTime  @updatedAt @map("updatedat")
 
   @@map("diagnoses")
 }

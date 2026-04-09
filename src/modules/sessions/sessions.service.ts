@@ -45,3 +45,39 @@ export const getSessionDetail = async (
   sessionId: string,
   user:      RequestUser
 ) => checkSessionAccess(sessionId, user);
+
+// Tambahkan fungsi ini di bawah getSessionDetail
+
+export const listSessions = async (user: RequestUser) => {
+  const isGlobal = GLOBAL_ROLES.includes(user.roleName);
+
+  // branchFilter: global role lihat semua, cabang hanya lihat sesinya sendiri
+  const branchFilter = isGlobal ? {} : { branchId: user.branchId! };
+
+  const sessions = await prisma.treatmentSession.findMany({
+    where: {
+      encounter: { ...branchFilter },
+    },
+    orderBy: { treatmentDate: "desc" },
+    take: 50,
+    select: {
+      treatmentSessionId : true,
+      infusKe            : true,
+      status             : true,
+      treatmentDate      : true,
+      pelaksanaan        : true,
+      encounter: {
+        select: {
+          encounterId : true,
+          member      : { select: { memberNo: true, fullName: true } },
+          branch      : { select: { name: true } },
+        },
+      },
+    },
+  });
+
+  return sessions.map(s => ({
+    ...s,
+    treatmentDate: s.treatmentDate.toISOString(),
+  }));
+};
