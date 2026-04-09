@@ -3,7 +3,7 @@ import jwt             from "jsonwebtoken";
 import { prisma }      from "@/config/prisma";
 import { env }         from "@/config/env";
 import type { LoginDto } from "./auth.validator";
-
+import { AppError } from '../../utils/AppError';
 interface TokenPair {
   accessToken:  string;
   refreshToken: string;
@@ -26,11 +26,11 @@ export const loginService = async (dto: LoginDto) => {
   });
 
   if (!user || !user.isActive)
-    throw Object.assign(new Error("Email atau password salah"), { statusCode: 401 });
+    throw new AppError("Email atau password salah", 401);
 
   const valid = await bcrypt.compare(dto.password, user.passwordHash);
   if (!valid)
-    throw Object.assign(new Error("Email atau password salah"), { statusCode: 401 });
+    throw new AppError("Email atau password salah", 401);
 
   const tokens = signTokens(user.userId);
 
@@ -55,19 +55,12 @@ export const refreshService = async (refreshToken: string) => {
   try {
     payload = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as { userId: string };
   } catch {
-    throw Object.assign(new Error("Refresh token tidak valid atau expired"), { statusCode: 401 });
+    throw new AppError("Refresh token tidak valid atau expired", 401); // ← fix
   }
-
-  const user = await prisma.user.findUnique({
-    where: { userId: payload.userId, isActive: true },
-  });
-
-  if (!user)
-    throw Object.assign(new Error("User tidak ditemukan"), { statusCode: 401 });
-
+  const user = await prisma.user.findUnique({ where: { userId: payload.userId, isActive: true } });
+  if (!user) throw new AppError("User tidak ditemukan", 401); // ← fix
   return signTokens(user.userId);
 };
-
 // ─── Logout ───────────────────────────────────────────────────────────────────
 
 export const logoutService = async (_userId: string) => ({
@@ -85,8 +78,7 @@ export const meService = async (userId: string) => {
     },
   });
 
-  if (!user)
-    throw Object.assign(new Error("User tidak ditemukan"), { statusCode: 401 });
+  if (!user) throw new AppError("User tidak ditemukan", 401);
 
   return {
     userId:    user.userId,

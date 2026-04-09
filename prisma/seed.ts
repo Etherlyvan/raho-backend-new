@@ -10,11 +10,14 @@ import {
   SessionStatus,
   VitalSignType,
   VitalSignTiming,
-} from "../src/generated/prisma"; // ← satu import, satu source
+  JenisBotol,
+  MutationType,
+  InventoryCategory,
+} from "../src/generated/prisma";
 import bcrypt from "bcryptjs";
 import { generateStaffCode } from "../src/utils/uniqueCode";
 
-const prisma = new PrismaClient(); // ← satu instance
+const prisma = new PrismaClient();
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -24,16 +27,16 @@ const ALL_ROLES: RoleName[] = [
 ];
 
 const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
-  SUPER_ADMIN:    ["*"],
-  ADMIN_MANAGER:  ["branch:*", "package-pricing:*", "shipment:read", "user:manage-branch", "report:read"],
-  ADMIN_CABANG:   ["member:read", "inventory:*", "stock-request:create", "shipment:approve", "user:manage-branch", "branch:stats"],
-  ADMIN_LAYANAN:  ["member:*", "encounter:*", "session:*", "package:assign", "invoice:read", "notification:send"],
-  DOCTOR:         ["session:read", "therapy-plan:*", "diagnosis:*", "evaluation:*", "vital-sign:read"],
-  NURSE:          ["session:read", "vital-sign:*", "infusion:*", "material:*", "photo:*", "emr-note:create"],
-  MEMBER:         ["me:read", "me:sessions", "me:invoices", "me:notifications", "me:chat"],
+  SUPER_ADMIN:   ["*"],
+  ADMIN_MANAGER: ["branch:*", "package-pricing:*", "shipment:read", "user:manage-branch", "report:read"],
+  ADMIN_CABANG:  ["member:read", "inventory:*", "stock-request:create", "shipment:approve", "user:manage-branch", "branch:stats"],
+  ADMIN_LAYANAN: ["member:*", "encounter:*", "session:*", "package:assign", "invoice:read", "notification:send"],
+  DOCTOR:        ["session:read", "therapy-plan:*", "diagnosis:*", "evaluation:*", "vital-sign:read"],
+  NURSE:         ["session:read", "vital-sign:*", "infusion:*", "material:*", "photo:*", "emr-note:create"],
+  MEMBER:        ["me:read", "me:sessions", "me:invoices", "me:notifications", "me:chat"],
 };
 
-// ─── Sprint 1 Functions ───────────────────────────────────────────────────────
+// ─── Sprint 1 ─────────────────────────────────────────────────────────────────
 
 async function seedRoles() {
   console.log("📦 Seeding roles...");
@@ -68,11 +71,11 @@ async function seedDefaultBranch() {
 
 async function seedSuperAdmin() {
   console.log("👤 Seeding Super Admin...");
-  const superAdminRole  = await prisma.role.findUniqueOrThrow({ where: { name: "SUPER_ADMIN" } });
-  const email           = "superadmin@raho.id";
-  const existingUser    = await prisma.user.findUnique({ where: { email } });
-  const staffCode       = existingUser?.staffCode ?? await generateStaffCode("SUPER_ADMIN");
-  const passwordHash    = await bcrypt.hash("Admin@RAHO2024!", 12);
+  const superAdminRole = await prisma.role.findUniqueOrThrow({ where: { name: "SUPER_ADMIN" } });
+  const email          = "superadmin@raho.id";
+  const existingUser   = await prisma.user.findUnique({ where: { email } });
+  const staffCode      = existingUser?.staffCode ?? await generateStaffCode("SUPER_ADMIN");
+  const passwordHash   = await bcrypt.hash("Admin@RAHO2024!", 12);
 
   const superAdmin = await prisma.user.upsert({
     where:  { email },
@@ -96,11 +99,11 @@ async function seedTestUsers() {
   const testUsers: Array<{
     email: string; fullName: string; role: RoleName; withBranch: boolean;
   }> = [
-    { email: "manager@raho.id",   fullName: "Admin Manager Test",  role: "ADMIN_MANAGER",  withBranch: false },
-    { email: "admcabang@raho.id", fullName: "Admin Cabang Test",   role: "ADMIN_CABANG",   withBranch: true  },
-    { email: "admlayn@raho.id",   fullName: "Admin Layanan Test",  role: "ADMIN_LAYANAN",  withBranch: true  },
-    { email: "dokter@raho.id",    fullName: "dr. Test Dokter",     role: "DOCTOR",         withBranch: true  },
-    { email: "nakes@raho.id",     fullName: "Nakes Test",          role: "NURSE",          withBranch: true  },
+    { email: "manager@raho.id",   fullName: "Admin Manager Test", role: "ADMIN_MANAGER", withBranch: false },
+    { email: "admcabang@raho.id", fullName: "Admin Cabang Test",  role: "ADMIN_CABANG",  withBranch: true  },
+    { email: "admlayn@raho.id",   fullName: "Admin Layanan Test", role: "ADMIN_LAYANAN", withBranch: true  },
+    { email: "dokter@raho.id",    fullName: "dr. Test Dokter",    role: "DOCTOR",        withBranch: true  },
+    { email: "nakes@raho.id",     fullName: "Nakes Test",         role: "NURSE",         withBranch: true  },
   ];
 
   for (const u of testUsers) {
@@ -131,7 +134,7 @@ async function seedTestUsers() {
   console.log("  🔐 Password semua test user: Test@1234!");
 }
 
-// ─── Sprint 2 Functions ───────────────────────────────────────────────────────
+// ─── Sprint 2 ─────────────────────────────────────────────────────────────────
 
 const generateMemberNo = async (branchId: string): Promise<string> => {
   const branch     = await prisma.branch.findUniqueOrThrow({ where: { branchId } });
@@ -147,8 +150,8 @@ async function seedSprint2() {
   console.log("\n📦 Seeding Sprint 2 — Tanda Vital...");
 
   const superAdmin = await prisma.user.findUniqueOrThrow({ where: { email: "superadmin@raho.id" } });
-  const doctor     = await prisma.user.findUniqueOrThrow({ where: { email: "dokter@raho.id" } });   // ← bukan doctor@
-  const nurse      = await prisma.user.findUniqueOrThrow({ where: { email: "nakes@raho.id" } });    // ← bukan nurse@
+  const doctor     = await prisma.user.findUniqueOrThrow({ where: { email: "dokter@raho.id" } });
+  const nurse      = await prisma.user.findUniqueOrThrow({ where: { email: "nakes@raho.id" } });
   const branch     = await prisma.branch.findUniqueOrThrow({ where: { branchCode: "PUSAT" } });
   const memberRole = await prisma.role.findUniqueOrThrow({ where: { name: "MEMBER" } });
 
@@ -235,9 +238,9 @@ async function seedSprint2() {
   }
   console.log(`  ✅ MemberPackage: ${memberPackage.packageName} (${memberPackage.status})`);
 
-  // 4. Encounter
+  // 4. Encounter — filter via memberPackageId (Encounter tidak punya field notes)
   let encounter = await prisma.encounter.findFirst({
-    where: { memberId: member.memberId },
+    where: { memberPackageId: memberPackage.memberPackageId },
   });
   if (!encounter) {
     encounter = await prisma.encounter.create({
@@ -249,7 +252,6 @@ async function seedSprint2() {
         type:            EncounterType.TREATMENT,
         status:          EncounterStatus.ONGOING,
         treatmentDate:   new Date("2026-04-01"),
-        // ← tidak ada field "notes" di model Encounter
       },
     });
   }
@@ -269,7 +271,7 @@ async function seedSprint2() {
         treatmentDate: new Date("2026-04-01T09:00:00Z"),
         startedAt:     new Date("2026-04-01T09:10:00Z"),
         completedAt:   new Date("2026-04-01T11:00:00Z"),
-        status:        SessionStatus.COMPLETED,  // ← bukan COMPLETED (sama, OK)
+        status:        SessionStatus.COMPLETED,
         berhasilInfus: true,
       },
     });
@@ -320,15 +322,184 @@ async function seedSprint2() {
         infusKe:       2,
         treatmentDate: new Date("2026-04-08T09:00:00Z"),
         startedAt:     new Date("2026-04-08T09:05:00Z"),
-        status:        SessionStatus.IN_PROGRESS, // ← bukan INPROGRESS
+        status:        SessionStatus.IN_PROGRESS,
       },
     });
   }
   console.log(`  ✅ Session 2 (IN_PROGRESS) — 0 tanda vital`);
 
-  console.log("\n  📋 Test IDs:");
+  console.log("\n  📋 Test IDs (Sprint 2):");
   console.log(`  SESSION_1_ID = ${session1.treatmentSessionId}`);
   console.log(`  SESSION_2_ID = ${session2.treatmentSessionId}`);
+
+  // Return data yang dibutuhkan Sprint 3
+  return { branch, nurse, doctor, superAdmin, member, memberPackage, encounter, session1, session2 };
+}
+
+// ─── Sprint 3 ─────────────────────────────────────────────────────────────────
+
+// Helper: safe upsert MasterProduct (name bukan @@unique di schema)
+const findOrCreateMasterProduct = async (data: {
+  name: string;
+  category: InventoryCategory;
+  unit: string;
+}): Promise<string> => {
+  const existing = await prisma.masterProduct.findFirst({ where: { name: data.name } });
+  if (existing) return existing.masterProductId;
+  const created = await prisma.masterProduct.create({ data: { ...data, isActive: true } });
+  return created.masterProductId;
+};
+
+async function seedSprint3(sprint2Data: Awaited<ReturnType<typeof seedSprint2>>) {
+  console.log("\n📦 Seeding Sprint 3 — Infus Aktual...");
+
+  const { branch, nurse, doctor, session1, session2 } = sprint2Data;
+
+  // ── 1. MasterProducts ──────────────────────────────────────────────────────
+  console.log("  📦 Seeding MasterProducts...");
+
+  const PRODUCTS: Array<{ name: string; category: InventoryCategory; unit: string }> = [
+    { name: "IFA Mg", category: InventoryCategory.MEDICINE,   unit: "mg" },
+    { name: "HHO",    category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "H2",     category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "NO",     category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "GASO",   category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "O2",     category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "O3",     category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "EDTA",   category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "MB",     category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "H2S",    category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "KCL",    category: InventoryCategory.MEDICINE,   unit: "ml" },
+    { name: "NaCl",   category: InventoryCategory.CONSUMABLE, unit: "ml" },
+  ];
+
+  const masterProductMap: Record<string, string> = {};
+  for (const p of PRODUCTS) {
+    masterProductMap[p.name] = await findOrCreateMasterProduct(p);
+    console.log(`    ✅ MasterProduct: ${p.name}`);
+  }
+
+  // ── 2. InventoryItems + stok awal ──────────────────────────────────────────
+  console.log("  📦 Seeding InventoryItems...");
+
+  const INITIAL_STOCK: Record<string, number> = {
+    "IFA Mg": 5000, "HHO": 2000, "H2":   2000, "NO":   1000,
+    "GASO":   1000, "O2":  3000, "O3":   1000, "EDTA": 1000,
+    "MB":      500, "H2S":  500, "KCL":   800, "NaCl": 10000,
+  };
+
+  for (const [name, stock] of Object.entries(INITIAL_STOCK)) {
+    const masterProductId = masterProductMap[name];
+    await prisma.inventoryItem.upsert({
+      where:  { masterProductId_branchId: { masterProductId, branchId: branch.branchId } },
+      create: { masterProductId, branchId: branch.branchId, stock, minThreshold: 100, isActive: true },
+      update: {},
+    });
+  }
+  console.log(`    ✅ ${Object.keys(INITIAL_STOCK).length} InventoryItems`);
+
+  // ── 3. SessionTherapyPlan — Session 1 (plan sesuai aktual) ─────────────────
+  await prisma.sessionTherapyPlan.upsert({
+    where:  { treatmentSessionId: session1.treatmentSessionId },
+    create: {
+      treatmentSessionId: session1.treatmentSessionId,
+      plannedBy:          doctor.userId,
+      ifaMg:    200, hhoMl:   150, h2Ml:   100, noMl:    80,
+      gasoMl:    60, o2Ml:    200, o3Ml:    50, edtaMl:  30,
+      mbMl:      10, h2sMl:    20, kclMl:   15, jmlNbMl: 500,
+      keterangan: "Sesi pertama — dosis standar",
+    },
+    update: {},
+  });
+  console.log(`  ✅ SessionTherapyPlan Session 1`);
+
+  // ── 4. InfusionExecution — Session 1 (COMPLETED, tidak ada deviasi) ────────
+  // Reload session1 dengan include infusionExecution
+  const session1Full = await prisma.treatmentSession.findUniqueOrThrow({
+    where:   { treatmentSessionId: session1.treatmentSessionId },
+    include: { infusionExecution: true },
+  });
+
+  if (!session1Full.infusionExecution) {
+    await prisma.infusionExecution.create({
+      data: {
+        treatmentSessionId:    session1.treatmentSessionId,
+        filledBy:              nurse.userId,
+        ifaMgActual:   200,  hhoMlActual:   150, h2MlActual:   100,
+        noMlActual:     80,  gasoMlActual:   60, o2MlActual:   200,
+        o3MlActual:     50,  edtaMlActual:   30, mbMlActual:    10,
+        h2sMlActual:    20,  kclMlActual:    15, jmlNbMlActual: 500,
+        jenisBotol:           JenisBotol.IFA,
+        jenisCairan:          "NaCl 0.9%",
+        volumeCarrierMl:       500,
+        jumlahPenggunaanJarum: 2,
+        tglProduksiCairan:    new Date("2026-04-01"),
+        keterangan:           "Pelaksanaan berjalan lancar",
+        deviationNote:        null,
+      },
+    });
+    console.log(`  ✅ InfusionExecution Session 1 (no deviation)`);
+
+    // StockMutation — auto-deduct untuk Session 1
+    const DEDUCTIONS_S1: Array<{ name: string; qty: number }> = [
+      { name: "IFA Mg", qty: 200 }, { name: "HHO",  qty: 150 },
+      { name: "H2",     qty: 100 }, { name: "NO",    qty:  80 },
+      { name: "GASO",   qty:  60 }, { name: "O2",    qty: 200 },
+      { name: "O3",     qty:  50 }, { name: "EDTA",  qty:  30 },
+      { name: "MB",     qty:  10 }, { name: "H2S",   qty:  20 },
+      { name: "KCL",    qty:  15 }, { name: "NaCl",  qty: 500 },
+    ];
+
+    for (const { name, qty } of DEDUCTIONS_S1) {
+      const masterProductId = masterProductMap[name];
+      const item = await prisma.inventoryItem.findUnique({
+        where: { masterProductId_branchId: { masterProductId, branchId: branch.branchId } },
+      });
+      if (!item) continue;
+      const stockBefore = item.stock;
+      const stockAfter  = stockBefore - qty;
+      await prisma.inventoryItem.update({
+        where: { inventoryItemId: item.inventoryItemId },
+        data:  { stock: stockAfter },
+      });
+      await prisma.stockMutation.create({
+        data: {
+          inventoryItemId: item.inventoryItemId,
+          branchId:        branch.branchId,
+          type:            MutationType.USED,
+          quantity:        -qty,
+          stockBefore,
+          stockAfter,
+          createdBy:       nurse.userId,
+          notes:           `[SEED_S3] Auto-deduct sesi infus ${session1.treatmentSessionId} (${name})`,
+        },
+      });
+    }
+    console.log(`  ✅ 12 StockMutations (USED) untuk Session 1`);
+  } else {
+    console.log(`  ⏭️  InfusionExecution Session 1 sudah ada — skip`);
+  }
+
+  // ── 5. SessionTherapyPlan — Session 2 (dosis ditingkatkan) ─────────────────
+  await prisma.sessionTherapyPlan.upsert({
+    where:  { treatmentSessionId: session2.treatmentSessionId },
+    create: {
+      treatmentSessionId: session2.treatmentSessionId,
+      plannedBy:          doctor.userId,
+      ifaMg:    250, hhoMl:   180, h2Ml:   120, noMl:   100,
+      gasoMl:    80, o2Ml:    220, o3Ml:    60, edtaMl:  40,
+      mbMl:      15, h2sMl:    25, kclMl:   20, jmlNbMl: 500,
+      keterangan: "Sesi kedua — dosis ditingkatkan",
+    },
+    update: {},
+  });
+  console.log(`  ✅ SessionTherapyPlan Session 2 (InfusionExecution belum ada — untuk test POST)`);
+
+  // ── Summary ────────────────────────────────────────────────────────────────
+  console.log("\n  📋 Test IDs (Sprint 3):");
+  console.log(`  SESSION_1_ID = ${session1.treatmentSessionId}  ← COMPLETED + InfusionExecution + TherapyPlan`);
+  console.log(`  SESSION_2_ID = ${session2.treatmentSessionId}  ← IN_PROGRESS + TherapyPlan, belum InfusionExecution`);
+  console.log(`  BRANCH_ID    = ${branch.branchId}`);
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -340,14 +511,19 @@ async function main() {
   await seedDefaultBranch();
   await seedSuperAdmin();
   await seedTestUsers();
-  await seedSprint2(); // ← Sprint 2
+
+  const sprint2Data = await seedSprint2();
+  await seedSprint3(sprint2Data);
 
   console.log("\n✅ Seeding selesai!\n");
   console.log("📋 Akun yang tersedia:");
-  console.log("  superadmin@raho.id  — Admin@RAHO2024!");
-  console.log("  dokter@raho.id      — Test@1234!");
-  console.log("  nakes@raho.id       — Test@1234!");
-  console.log("  member.test@raho.id — Member@Test123!");
+  console.log("  superadmin@raho.id   — Admin@RAHO2024!");
+  console.log("  manager@raho.id      — Test@1234!");
+  console.log("  admcabang@raho.id    — Test@1234!");
+  console.log("  admlayn@raho.id      — Test@1234!");
+  console.log("  dokter@raho.id       — Test@1234!");
+  console.log("  nakes@raho.id        — Test@1234!");
+  console.log("  member.test@raho.id  — Member@Test123!");
 }
 
 main()

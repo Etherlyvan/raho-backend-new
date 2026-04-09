@@ -99,3 +99,37 @@ export const generateReferralCode = async (
 
   return code;
 };
+
+// Tambahkan di bawah generateReferralCode (jangan timpa isi yang lama)
+
+type MutationTypeCode = "USE" | "RCV" | "ADJ" | "RTN";
+
+/**
+ * Generate referensi unik untuk StockMutation.
+ * Format: STK-{TYPE}-{BRANCH_3}-{YYYYMMDD}-{SEQ_4}
+ * Contoh: STK-USE-PST-20260409-0001
+ *         │   │   │   │        └── Nomor urut hari ini di cabang (4 digit)
+ *         │   │   │   └────────── Tanggal YYYYMMDD
+ *         │   │   └────────────── Kode cabang 3 huruf
+ *         │   └────────────────── Tipe: USE/RCV/ADJ/RTN
+ *         └────────────────────── Prefix: Stock Mutation
+ */
+export const generateMutationRef = async (
+  type: MutationTypeCode,
+  branchId: string
+): Promise<string> => {
+  const branch = await prisma.branch.findUnique({
+    where:  { branchId },
+    select: { branchCode: true },
+  });
+
+  const branchCode = (branch?.branchCode ?? "UNK").slice(0, 3).toUpperCase();
+  const today      = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const prefix     = `STK-${type}-${branchCode}-${today}`;
+
+  const count = await prisma.stockMutation.count({
+    where: { branchId, notes: { startsWith: prefix } },
+  });
+
+  return `${prefix}-${String(count + 1).padStart(4, "0")}`;
+};

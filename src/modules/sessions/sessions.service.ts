@@ -11,34 +11,21 @@ const GLOBAL_ROLES: RoleName[] = [
 
 export const checkSessionAccess = async (
   sessionId: string,
-  user:      RequestUser
+  user: RequestUser
 ) => {
   const session = await prisma.treatmentSession.findUnique({
     where: { treatmentSessionId: sessionId },
     include: {
       encounter: {
         include: {
-          member: {
-            select: { memberId: true, memberNo: true, fullName: true },
-          },
-          branch: {
-            select: { branchId: true, name: true, branchCode: true },
-          },
-          doctor: {
-            select: {
-              userId:  true,
-              profile: { select: { fullName: true } },
-            },
-          },
+          branch:  { select: { branchId: true, branchCode: true, name: true } },
+          member:  { select: { memberId: true, memberNo: true, fullName: true } },
+          doctor:  { select: { userId: true, profile: { select: { fullName: true } } } },
         },
       },
-      nurse: {
-        select: {
-          userId:  true,
-          profile: { select: { fullName: true } },
-        },
-      },
-      therapyPlan: true,
+      nurse:             { select: { userId: true, profile: { select: { fullName: true } } } },
+      therapyPlan:       true,
+      infusionExecution: true,   // ← FIX: tambah ini
     },
   });
 
@@ -48,9 +35,8 @@ export const checkSessionAccess = async (
     if (session.encounter.branchId !== user.branchId) {
       throw new AppError("Akses ditolak: sesi bukan milik cabang Anda", 403);
     }
+    await assertMemberAccess(session.encounter.member.memberId, user);
   }
-
-  await assertMemberAccess(session.encounter.member.memberId, user);
 
   return session;
 };
