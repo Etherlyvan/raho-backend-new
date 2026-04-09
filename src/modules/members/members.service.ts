@@ -80,3 +80,117 @@ export const listMemberSessionsService = async (memberId: string, user: RequestU
     },
   });
 };
+
+
+
+export interface TherapyHistoryRow {
+  treatmentSessionId: string;
+  infusKe:            number | null;
+  treatmentDate:      string;
+  status:             string;
+  planCode:           string | null;
+  ifaMg:              number | null;
+  hhoMl:              number | null;
+  h2Ml:               number | null;
+  noMl:               number | null;
+  gasoMl:             number | null;
+  o2Ml:               number | null;
+  o3Ml:               number | null;
+  edtaMl:             number | null;
+  mbMl:               number | null;
+  h2sMl:              number | null;
+  kclMl:              number | null;
+  jmlNbMl:            number | null;
+  keterangan:         string | null;
+  plannedBy:          string | null;  // fullName dokter
+  plannedAt:          string | null;
+  hasInfusion:        boolean;
+  deviationNote:      string | null;
+}
+
+export const getTherapyHistoryService = async (
+  memberId: string,
+  user: RequestUser,
+  page  = 1,
+  limit = 20,
+): Promise<{ data: TherapyHistoryRow[]; total: number; page: number; limit: number }> => {
+  // Guard akses member
+  await assertMemberAccess(memberId, user);
+
+  const skip = (page - 1) * limit;
+
+  // Hanya sesi yang punya TherapyPlan
+  const where = {
+    encounter:   { memberId },
+    therapyPlan: { isNot: null },
+  } as const;
+
+  const [total, sessions] = await Promise.all([
+    prisma.treatmentSession.count({ where }),
+    prisma.treatmentSession.findMany({
+      where,
+      orderBy: { treatmentDate: 'desc' },
+      skip,
+      take:    limit,
+      select: {
+        treatmentSessionId: true,
+        infusKe:            true,
+        treatmentDate:      true,
+        status:             true,
+        therapyPlan: {
+          select: {
+            planCode:    true,
+            ifaMg:       true,
+            hhoMl:       true,
+            h2Ml:        true,
+            noMl:        true,
+            gasoMl:      true,
+            o2Ml:        true,
+            o3Ml:        true,
+            edtaMl:      true,
+            mbMl:        true,
+            h2sMl:       true,
+            kclMl:       true,
+            jmlNbMl:     true,
+            keterangan:  true,
+            plannedAt:   true,
+            planner: { select: { profile: { select: { fullName: true } } } },
+          },
+        },
+        infusionExecution: {
+          select: {
+            infusionExecutionId: true,
+            deviationNote:       true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const data: TherapyHistoryRow[] = sessions.map(s => ({
+    treatmentSessionId: s.treatmentSessionId,
+    infusKe:            s.infusKe,
+    treatmentDate:      s.treatmentDate.toISOString(),
+    status:             s.status,
+    planCode:           s.therapyPlan?.planCode           ?? null,
+    ifaMg:              s.therapyPlan?.ifaMg              ?? null,
+    hhoMl:              s.therapyPlan?.hhoMl              ?? null,
+    h2Ml:               s.therapyPlan?.h2Ml               ?? null,
+    noMl:               s.therapyPlan?.noMl               ?? null,
+    gasoMl:             s.therapyPlan?.gasoMl             ?? null,
+    o2Ml:               s.therapyPlan?.o2Ml               ?? null,
+    o3Ml:               s.therapyPlan?.o3Ml               ?? null,
+    edtaMl:             s.therapyPlan?.edtaMl             ?? null,
+    mbMl:               s.therapyPlan?.mbMl               ?? null,
+    h2sMl:              s.therapyPlan?.h2sMl              ?? null,
+    kclMl:              s.therapyPlan?.kclMl              ?? null,
+    jmlNbMl:            s.therapyPlan?.jmlNbMl            ?? null,
+    keterangan:         s.therapyPlan?.keterangan         ?? null,
+    plannedBy:          s.therapyPlan?.planner?.profile?.fullName ?? null,
+    plannedAt:          s.therapyPlan?.plannedAt.toISOString()    ?? null,
+    hasInfusion:        !!s.infusionExecution,
+    deviationNote:      s.infusionExecution?.deviationNote        ?? null,
+  }));
+
+  return { data, total, page, limit };
+};

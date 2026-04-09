@@ -560,29 +560,32 @@ model TreatmentSession {
 // ─── RENCANA TERAPI (Dokter, SEBELUM sesi) ───────────────────
 
 model SessionTherapyPlan {
-  sessionTherapyPlanId String           @id @default(cuid()) @map("session_therapy_plan_id")
-  treatmentSessionId   String           @unique @map("treatment_session_id")
+  sessionTherapyPlanId String   @id @default(cuid()) @map("session_therapy_plan_id")
+  treatmentSessionId   String   @unique @map("treatment_session_id")
   session              TreatmentSession @relation(fields: [treatmentSessionId], references: [treatmentSessionId])
-  // Dosis bahan yang direncanakan dokter (satuan ml, kecuali ifaMg = mg)
-  ifaMg                Float?           @default(0) @map("ifa_mg")    // IFA + Mg (mg)
-  hhoMl                Float?           @default(0) @map("hho_ml")    // HHO (ml)
-  h2Ml                 Float?           @default(0) @map("h2_ml")     // H2 (ml)
-  noMl                 Float?           @default(0) @map("no_ml")     // NO (ml)
-  gasoMl               Float?           @default(0) @map("gaso_ml")   // GASO (ml)
-  o2Ml                 Float?           @default(0) @map("o2_ml")     // O2 (ml)
-  o3Ml                 Float?           @default(0) @map("o3_ml")     // O3 (ml)
-  edtaMl               Float?           @default(0) @map("edta_ml")   // EDTA (ml)
-  mbMl                 Float?           @default(0) @map("mb_ml")     // MB - Methylene Blue (ml)
-  h2sMl                Float?           @default(0) @map("h2s_ml")    // H2S (ml)
-  kclMl                Float?           @default(0) @map("kcl_ml")    // KCL (ml)
-  // Jumlah NB = total volume NaCl/carrier yang digunakan (ml)
-  jmlNbMl              Float?           @default(0) @map("jml_nb_ml")
-  keterangan           String?                                        // catatan tambahan
-  plannedBy            String           @map("planned_by")
-  planner              User             @relation("TherapyPlanBy", fields: [plannedBy], references: [userId])
-  plannedAt            DateTime         @default(now()) @map("planned_at")
-  createdAt            DateTime         @default(now()) @map("created_at")
-  updatedAt            DateTime         @updatedAt @map("updated_at")
+
+  // ✅ Tambahan Sprint 6 — kode unik terapi plan
+  planCode             String?  @unique @map("plan_code")
+
+  ifaMg   Float? @default(0) @map("ifa_mg")
+  hhoMl   Float? @default(0) @map("hho_ml")
+  h2Ml    Float? @default(0) @map("h2_ml")
+  noMl    Float? @default(0) @map("no_ml")
+  gasoMl  Float? @default(0) @map("gaso_ml")
+  o2Ml    Float? @default(0) @map("o2_ml")
+  o3Ml    Float? @default(0) @map("o3_ml")
+  edtaMl  Float? @default(0) @map("edta_ml")
+  mbMl    Float? @default(0) @map("mb_ml")
+  h2sMl   Float? @default(0) @map("h2s_ml")
+  kclMl   Float? @default(0) @map("kcl_ml")
+  jmlNbMl Float? @default(0) @map("jml_nb_ml")
+  keterangan String?
+
+  plannedBy  String   @map("planned_by")
+  planner    User     @relation("TherapyPlanBy", fields: [plannedBy], references: [userId])
+  plannedAt  DateTime @default(now()) @map("planned_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("session_therapy_plans")
 }

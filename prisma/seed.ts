@@ -18,7 +18,7 @@ import {
 } from "../src/generated/prisma";
 import bcrypt from "bcryptjs";
 import { generateStaffCode } from "../src/utils/uniqueCode";
-
+import { seedSprint6 } from './sprint6.seed';
 const prisma = new PrismaClient();
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -747,6 +747,9 @@ async function main() {
   // Sprint 5 — self-contained, query DB sendiri
   await seedSprint5();
 
+
+// Di dalam main():
+await seedSprint6();
   console.log("\n✅ Seeding selesai!\n");
   console.log("📋 Akun:");
   console.log("  SUPER_ADMIN@raho.id   — Admin@RAHO2024!");
