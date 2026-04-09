@@ -133,3 +133,15 @@ export const generateMutationRef = async (
 
   return `${prefix}-${String(count + 1).padStart(4, "0")}`;
 };
+
+// ─── Kode Foto Sesi ───────────────────────────────────────────────────────────
+// Format : PHO.{YYYYMMDD}.{SES6}.{RAND4}.{ext}
+// Contoh : PHO.20260409.CLT7MG.K9MR.jpg
+// Makna  : PHO=jenis file, YYYYMMDD=tanggal foto, SES6=6 huruf ID sesi
+//          (agar file bisa dilacak ke sesi asalnya), RAND4=random anti-collision
+// ─────────────────────────────────────────────────────────────────────────────
+export const generatePhotoFileName = (sessionId: string, ext: string): string => {
+  const yyyymmdd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const ses6 = sessionId.slice(0, 6).toUpperCase();
+  return `PHO.${yyyymmdd}.${ses6}.${randStr(4)}${ext}`;
+};

@@ -1,0 +1,19 @@
+# docker-compose.yml (di root raho-backend/)
+version: "3.9"
+services:
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: raho-minio
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web Console
+    environment:
+      MINIO_ROOT_USER:     rahoadmin
+      MINIO_ROOT_PASSWORD: RahoSecret123!
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+volumes:
+  minio_data:
