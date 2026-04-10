@@ -50,30 +50,6 @@ export const generateStaffCode = async (role: RoleName): Promise<string> => {
 };
 
 /**
- * Generate memberNo unik.
- * Format: MBR-{BRANCH_CODE}-{YYYYMM}-{5SEQ}
- * Contoh: MBR-JKT01-202404-00023
- *
- * Makna: Identifikasi cabang registrasi + periode daftar + nomor urut
- */
-export const generateMemberNo = async (branchCode: string): Promise<string> => {
-  const prefix = `MBR-${branchCode}-${monthStamp()}`;
-
-  const lastMember = await prisma.member.findFirst({
-    where: { memberNo: { startsWith: prefix } },
-    orderBy: { memberNo: "desc" },
-  });
-
-  let seq = 1;
-  if (lastMember?.memberNo) {
-    const parts = lastMember.memberNo.split("-");
-    seq = parseInt(parts[parts.length - 1] ?? "0", 10) + 1;
-  }
-
-  return `${prefix}-${String(seq).padStart(5, "0")}`;
-};
-
-/**
  * Generate referralCode unik.
  * Format: REF-{NAME_SLUG}-{3RAND}
  * Contoh: REF-JESSICA-4A2
@@ -144,4 +120,21 @@ export const generatePhotoFileName = (sessionId: string, ext: string): string =>
   const yyyymmdd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const ses6 = sessionId.slice(0, 6).toUpperCase();
   return `PHO.${yyyymmdd}.${ses6}.${randStr(4)}${ext}`;
+};
+
+// Tambahkan/replace fungsi ini di uniqueCode.ts yang sudah ada
+
+/**
+ * Format: MBR-[BRANCH3]-[YYMM]-[SEQ5]
+ * Contoh: MBR-PST-2604-00001
+ * Makna : Member, Cabang PST, April 2026, urutan ke-1
+ */
+export const generateMemberNo = async (branchId: string): Promise<string> => {
+  const branch = await prisma.branch.findUniqueOrThrow({ where: { branchId } });
+  const slug  = branch.branchCode.slice(0, 3).toUpperCase();
+  const now   = new Date();
+  const yymm  = `${now.getFullYear().toString().slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const prefix = `MBR-${slug}-${yymm}-`;
+  const count  = await prisma.member.count({ where: { memberNo: { startsWith: prefix } } });
+  return `${prefix}${String(count + 1).padStart(5, '0')}`;
 };

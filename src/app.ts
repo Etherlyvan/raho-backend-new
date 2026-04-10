@@ -13,6 +13,7 @@ import dashboardRouter               from './modules/dashboard/dashboard.routes'
 import membersRouter                 from './modules/members/members.routes';
 import usersRouter                   from './modules/users/users.routes'; // ← TAMBAH
 
+
 const app = express();
 
 app.use(helmet());
@@ -31,11 +32,10 @@ app.use('/encounters/:encounterId/diagnoses', diagnosisNestedRouter);
 app.use('/diagnoses',  diagnosisStandaloneRouter);
 app.use('/dashboard',  dashboardRouter);
 app.use('/members',    membersRouter);
-app.use('/users',      usersRouter); // ← TAMBAH — expose GET /users/doctors
-
+app.use('/users',      usersRouter); 
 // Error handler — wajib PALING TERAKHIR
 app.use(errorHandler);
-
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.listen(env.PORT, () =>
   console.log(`RAHO Backend running on port ${env.PORT} [${env.NODE_ENV}]`),
 );

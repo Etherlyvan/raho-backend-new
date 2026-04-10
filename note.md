@@ -6,3 +6,12 @@ nakes@raho.id
   Test@1234!
 
   http://localhost:3000/sessions/[SESSION_1_ID]/tanda-vital
+
+
+
+  📦 Seeding Sprint 5 — Diagnosa...
+  ✅ Diagnosis 1: DX-PUS-2604-00001 — Hipertensi
+  ✅ Diagnosis 2: DX-PUS-2604-00002 — Neurologi
+
+     REF-JESSICA-A01 — dr. Jessica Hartono
+   REF-BUDI-B02 — Budi Santoso (Apoteker)

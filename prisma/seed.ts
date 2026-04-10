@@ -20,6 +20,7 @@ import bcrypt from "bcryptjs";
 import { generateStaffCode } from "../src/utils/uniqueCode";
 import { seedSprint6 } from './sprint6.seed';
 import { seedSprint7 } from './sprint7.seed';
+import { seedSprint8 } from './sprint8.seed';
 
 const prisma = new PrismaClient();
 
@@ -755,7 +756,7 @@ async function main() {
 
   // Sprint 7 ← wajib di dalam main(), bukan di luar
   await seedSprint7();
-
+  await seedSprint8();
   console.log('Seeding selesai!');
 }
 
