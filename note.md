@@ -13,5 +13,29 @@ nakes@raho.id
   ✅ Diagnosis 1: DX-PUS-2604-00001 — Hipertensi
   ✅ Diagnosis 2: DX-PUS-2604-00002 — Neurologi
 
-     REF-JESSICA-A01 — dr. Jessica Hartono
-   REF-BUDI-B02 — Budi Santoso (Apoteker)
+  📋 Test IDs (Sprint 2):
+  SESSION_1_ID = cmnqv42pt0018wn08enn32yl3
+  SESSION_2_ID = cmnqv4502001uwn081afexhrc
+
+
+   Akun member untuk test GET /members:
+  sari.wulandari@raho.id   Member123!
+  hendra.kurnia@raho.id    Member123!
+  dewi.anggraeni@raho.id   Member123!  (INACTIVE)
+  agus.salim@raho.id       Member123!
+  linda.cahyani@raho.id    Member123!
+
+Referral Code aktif:
+  REF-JESSICA-A01 — dr. Jessica Hartono
+  REF-BUDI-B02    — Budi Santoso (Apoteker)
+
+
+  👤 Seeding Super Admin...
+  ✅ Super Admin: SUPER_ADMIN@raho.id / Admin@RAHO2024!
+🧪 Seeding test users...
+  ✅ ADMIN_MANAGER: manager@raho.id
+  ✅ ADMIN_CABANG: admcabang@raho.id
+  ✅ ADMIN_LAYANAN: admlayn@raho.id
+  ✅ DOCTOR: dokter@raho.id
+  ✅ NURSE: nakes@raho.id
+  🔐 Password semua test user: Test@1234!
