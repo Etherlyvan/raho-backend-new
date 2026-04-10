@@ -19,6 +19,8 @@ import {
 import bcrypt from "bcryptjs";
 import { generateStaffCode } from "../src/utils/uniqueCode";
 import { seedSprint6 } from './sprint6.seed';
+import { seedSprint7 } from './sprint7.seed';
+
 const prisma = new PrismaClient();
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -726,8 +728,9 @@ async function seedSprint5() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 // SATU main function, hapus semua duplikat di atas
 
+
 async function main() {
-  console.log("\n🌱 Starting RAHO Seed...\n");
+  console.log('Starting RAHO Seed...');
 
   // Sprint 1
   await seedRoles();
@@ -735,32 +738,32 @@ async function main() {
   await seedSUPER_ADMIN();
   await seedTestUsers();
 
-  // Sprint 2 — returns data untuk dipakai sprint berikutnya
+  // Sprint 2
   const sprint2Data = await seedSprint2();
 
-  // Sprint 3 — butuh sprint2Data
+  // Sprint 3
   const sprint3Data = await seedSprint3(sprint2Data);
 
-  // Sprint 4 — butuh sprint2Data + sprint3Data
+  // Sprint 4
   await seedSprint4(sprint2Data, sprint3Data);
 
-  // Sprint 5 — self-contained, query DB sendiri
+  // Sprint 5
   await seedSprint5();
 
+  // Sprint 6
+  await seedSprint6();
 
-// Di dalam main():
-await seedSprint6();
-  console.log("\n✅ Seeding selesai!\n");
-  console.log("📋 Akun:");
-  console.log("  SUPER_ADMIN@raho.id   — Admin@RAHO2024!");
-  console.log("  manager@raho.id      — Test@1234!");
-  console.log("  admcabang@raho.id    — Test@1234!");
-  console.log("  admlayn@raho.id      — Test@1234!");
-  console.log("  dokter@raho.id       — Test@1234!");
-  console.log("  nakes@raho.id        — Test@1234!");
-  console.log("  member.test@raho.id  — Member@Test123!");
+  // Sprint 7 ← wajib di dalam main(), bukan di luar
+  await seedSprint7();
+
+  console.log('Seeding selesai!');
 }
 
+// ─── Jalankan ─────────────────────────────────────────────────────────────────
+
 main()
-  .catch((e) => { console.error("❌ Seed gagal:", e); process.exit(1); })
+  .catch(e => {
+    console.error('Seed gagal', e);
+    process.exit(1);
+  })
   .finally(() => prisma.$disconnect());

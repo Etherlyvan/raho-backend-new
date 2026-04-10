@@ -631,18 +631,24 @@ model InfusionExecution {
 // Format SOAP: Subjective, Objective, Assessment, Plan
 
 model DoctorEvaluation {
-  doctorEvaluationId String           @id @default(cuid()) @map("doctor_evaluation_id")
-  treatmentSessionId String           @unique @map("treatment_session_id")
+  doctorEvaluationId String   @id @default(cuid()) @map("doctor_evaluation_id")
+  treatmentSessionId String   @unique @map("treatment_session_id")
   session            TreatmentSession @relation(fields: [treatmentSessionId], references: [treatmentSessionId])
-  doctorId           String           @map("doctor_id")
-  doctor             User             @relation("EvaluationBy", fields: [doctorId], references: [userId])
-  evaluasiDokter     String?          @map("evaluasi_dokter") // catatan umum/ringkasan evaluasi
-  subjective         String?          // keluhan subjektif yang dirasakan pasien
-  objective          String?          // temuan objektif dari pemeriksaan
-  assessment         String?          // penilaian/kesimpulan klinis dokter
-  plan               String?          // rencana tindakan selanjutnya
-  createdAt          DateTime         @default(now()) @map("created_at")
-  updatedAt          DateTime         @updatedAt @map("updated_at")
+  doctorId           String   @map("doctor_id")
+  doctor             User     @relation("EvaluationBy", fields: [doctorId], references: [userId])
+
+  // Kode unik Sprint 7
+  evaluationCode     String?  @unique @map("evaluation_code")
+
+  // SOAP
+  evaluasiDokter     String?  @map("evaluasi_dokter")
+  subjective         String?
+  objective          String?
+  assessment         String?
+  plan               String?
+
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt      @map("updated_at")
 
   @@map("doctor_evaluations")
 }
